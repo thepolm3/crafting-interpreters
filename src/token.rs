@@ -1,4 +1,7 @@
-enum Token {
+use std::fmt::Display;
+
+#[derive(Debug)]
+pub enum Token {
     LeftParen,
     RightParen,
     LeftBrace,
@@ -42,4 +45,16 @@ enum Token {
     While,
 
     EndOfFile,
+}
+
+#[derive(Debug)]
+pub struct TrackedToken {
+    token: Token,
+    line: usize,
+}
+
+impl Display for TrackedToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.token)
+    }
 }
