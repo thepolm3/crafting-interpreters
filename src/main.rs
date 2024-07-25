@@ -3,7 +3,9 @@ use std::fs::read_to_string;
 use std::io::{self, BufRead, Write};
 
 use clap::Parser;
+mod error;
 mod scanner;
+mod token;
 #[derive(Parser, Debug)]
 
 struct Args {
