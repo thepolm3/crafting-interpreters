@@ -41,5 +41,5 @@ enum Token {
     Var,
     While,
 
-    EOF,
+    EndOfFile,
 }
