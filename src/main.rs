@@ -41,11 +41,13 @@ fn run_prompt() -> Result<()> {
             return Ok(());
         }
 
-        print!("{} > ", line);
         io::stdout().flush()?;
     }
 }
 
 fn run(source: &str) -> Result<()> {
+    let tokens = scanner::scan_tokens(source);
+    println!("{:?}", tokens);
+
     Ok(())
 }

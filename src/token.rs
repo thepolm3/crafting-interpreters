@@ -25,7 +25,7 @@ pub enum Token {
 
     Identifier(String),
     String(String),
-    Number(f64),
+    Number(String),
 
     And,
     Class,
@@ -43,8 +43,6 @@ pub enum Token {
     True,
     Var,
     While,
-
-    EndOfFile,
 }
 
 #[derive(Debug)]
