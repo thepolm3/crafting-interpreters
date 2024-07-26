@@ -19,7 +19,7 @@ impl Iterator for TokenIterator<'_> {
         let (first_index, first) = chars.next()?;
 
         if first.is_whitespace() {
-            let whitespace_index = chars.find(|(_, c)| !c.is_whitespace())?.0;
+            let whitespace_index: usize = chars.find(|(_, c)| !c.is_whitespace())?.0;
 
             self.input = &self.input[whitespace_index..];
             return self.next();
@@ -137,10 +137,10 @@ impl Iterator for TokenIterator<'_> {
             }
         }
 
-        return Some(Ok(Token::Identifier(word.to_owned())));
+        Some(Ok(Token::Identifier(word.to_owned())))
     }
 }
 
 pub fn scan_tokens(input: &str) -> Result<Vec<Token>, ScanError> {
-    TokenIterator { input }.collect()
+    TokenIterator { input, line: 1 }.collect()
 }
