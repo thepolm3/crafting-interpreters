@@ -34,7 +34,6 @@ impl Iterator for TokenIterator<'_> {
             '-' => Some(Token::Minus),
             '+' => Some(Token::Plus),
             ';' => Some(Token::Semicolon),
-            '/' => Some(Token::Slash),
             '*' => Some(Token::Star),
             _ => None,
         };
@@ -66,26 +65,38 @@ impl Iterator for TokenIterator<'_> {
             return Some(Ok(token));
         }
 
-        let second = chars.next();
+        let second = chars.next().map(|(_, c)| c);
         let double_token = match first {
             '!' => Some(match second {
-                Some((index, '=')) => (index, Token::BangEqual),
+                Some('=') => (first_index + 1, Token::BangEqual),
                 _ => (first_index, Token::Bang),
             }),
 
             '=' => Some(match second {
-                Some((index, '=')) => (index, Token::EqualEqual),
+                Some('=') => (first_index + 1, Token::EqualEqual),
                 _ => (first_index, Token::Equal),
             }),
 
             '>' => Some(match second {
-                Some((index, '=')) => (index, Token::GreaterEqual),
+                Some('=') => (first_index + 1, Token::GreaterEqual),
                 _ => (first_index, Token::Greater),
             }),
 
             '<' => Some(match second {
-                Some((index, '=')) => (index, Token::LessEqual),
+                Some('=') => (first_index + 1, Token::LessEqual),
                 _ => (first_index, Token::Less),
+            }),
+
+            '/' => Some(match second {
+                Some('/') => {
+                    let index = chars
+                        .find(|&(_, c)| c == '\n')
+                        .map(|t| t.0)
+                        .unwrap_or(self.input.len());
+                    self.input = &self.input[index..];
+                    return self.next();
+                }
+                _ => (first_index, Token::Slash),
             }),
 
             _ => None,
