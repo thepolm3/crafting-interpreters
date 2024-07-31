@@ -62,10 +62,14 @@ impl Iterator for TokenIterator<'_> {
 
             let index = if let Some((i, c)) = first_group {
                 if c == '.' {
-                    let second_group = chars.find(|(_, c)| !c.is_numeric());
-                    match second_group {
-                        None => i,
-                        Some((new_i, _)) => new_i,
+                    let next_char = chars.next();
+                    match next_char {
+                        Some((_, c)) if c.is_numeric() => chars
+                            .find(|(_, c)| !c.is_numeric())
+                            .map(|t| t.0)
+                            .unwrap_or(self.input.len()),
+                        //ignore trailing .
+                        _ => i,
                     }
                 } else {
                     i
