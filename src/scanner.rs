@@ -1,11 +1,14 @@
 use crate::token::Token;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum ScanError {
-    InvalidToken,
+    #[error("Mismatched double quote (\")")]
     MismatchedQuote,
-}
 
+    #[error("Failed to parse float")]
+    ParseFloatError(#[from] std::num::ParseFloatError),
+}
 struct TokenIterator<'a> {
     input: &'a str,
 }
@@ -45,7 +48,6 @@ impl Iterator for TokenIterator<'_> {
         if first == '"' {
             println!("{}", self.input);
             if let Some((index, _)) = chars.find(|&(_, x)| x == '"') {
-                println!("hi");
                 let token = Token::String(self.input[1..index].to_owned());
                 self.input = &self.input[index + 1..];
                 return Some(Ok(token));
@@ -56,11 +58,26 @@ impl Iterator for TokenIterator<'_> {
         }
 
         if first.is_numeric() {
-            let index = chars
-                .find(|(_, c)| !(c.is_numeric()))
-                .map(|t| t.0)
-                .unwrap_or(self.input.len());
-            let token = Token::Number(self.input[..index].to_owned());
+            let first_group = chars.find(|(_, c)| !c.is_numeric());
+
+            let index = if let Some((i, c)) = first_group {
+                if c == '.' {
+                    let second_group = chars.find(|(_, c)| !c.is_numeric());
+                    match second_group {
+                        None => i,
+                        Some((new_i, _)) => new_i,
+                    }
+                } else {
+                    i
+                }
+            } else {
+                self.input.len()
+            };
+
+            let token = Token::Number(match self.input[..index].parse::<f64>() {
+                Ok(token) => token,
+                Err(err) => return Some(Err(err.into())),
+            });
             self.input = &self.input[index..];
             return Some(Ok(token));
         }
@@ -141,6 +158,9 @@ impl Iterator for TokenIterator<'_> {
     }
 }
 
+pub fn is_float_char(c: char) -> bool {
+    c.is_numeric() || c == '.'
+}
 pub fn scan_tokens(input: &str) -> Result<Vec<Token>, ScanError> {
-    TokenIterator { input, line: 1 }.collect()
+    TokenIterator { input }.collect()
 }
